@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Information</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        .nav-links { 
+            display: flex; 
+            margin-bottom: 2em; 
+            gap: 1em; 
+        }
+        
+        .nav-links a { 
+            padding: 0.7em 1.2em; 
+            text-decoration: none; 
+            color: white; 
+            background-color: #28a745; 
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .nav-links a:hover { 
+            background-color: #218838; 
+        }
+        
+        .form-group {
+            margin-bottom: 1.5em;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            font-weight: bold;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 0.5em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        
+        button[type="submit"] {
+            padding: 0.7em 1.2em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        
+        .help-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 0.3em;
+        }
+        
+        .model-section {
+            margin-top: 2em;
+            padding: 1.5em;
+            background-color: #e9f7f2;
+            border-radius: 4px;
+            border-left: 4px solid #28a745;
+        }
+        
+        select {
+            width: 100%;
+            padding: 0.5em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        
+        .radio-group {
+            margin-bottom: 1em;
+        }
+        
+        .radio-option {
+            margin-bottom: 0.5em;
+        }
+        
+        .api-section {
+            margin-top: 1em;
+            padding: 1em;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Company Information</h1>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Workflow</a>
+            <a href="{{ url_for('view_csv') }}">View CSV Data</a>
+            <a href="{{ url_for('browse_emails') }}">Browse Emails</a>
+        </div>
+        
+        <p>Enter the company information below to personalize the generated emails.</p>
+        
+        <form action="{{ url_for('company_info') }}" method="post">
+            <div class="form-group">
+                <label for="company_name">Company Name</label>
+                <input type="text" id="company_name" name="company_name" value="XYZ" required>
+                <div class="help-text">The name of the company that will appear in the emails</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="job_position">Job Position</label>
+                <input type="text" id="job_position" name="job_position" value="Business " required>
+                <div class="help-text">The job position being offered</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="compensation_model">Compensation Model</label>
+                <input type="text" id="compensation_model" name="compensation_model" value="1,00,000 + 2% profit-sharing approach and self-directed schedule" required>
+                <div class="help-text">Describe how compensation works (e.g., salary, commission, profit-sharing)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="sign_off">Email Sign-off</label>
+                <input type="text" id="sign_off" name="sign_off" value="Recruitment Team, XYZ" required>
+                <div class="help-text">How emails will be signed off</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="currency">Currency</label>
+                <input type="text" id="currency" name="currency" value="USD" required>
+                <div class="help-text">Currency to use in the emails (e.g., USD, EUR, INR)</div>
+            </div>
+            
+            <div class="model-section">
+                <h3>Model Selection</h3>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="use_ollama" name="model_type" value="ollama" checked onchange="toggleApiSection()">
+                        <label for="use_ollama" style="display: inline; font-weight: normal;">Use Ollama (Local Model)</label>
+                        <div class="help-text">Uses your locally installed Ollama model (default: gemma3:4b)</div>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="use_api" name="model_type" value="api" onchange="toggleApiSection()">
+                        <label for="use_api" style="display: inline; font-weight: normal;">Use Cloud Model (API)</label>
+                        <div class="help-text">Connect to a cloud-based model using your API key</div>
+                    </div>
+                </div>
+                
+                <div id="api_section" class="api-section">
+                    <div class="form-group">
+                        <label for="api_key">API Key</label>
+                        <input type="text" id="api_key" name="api_key" placeholder="Enter your API key">
+                        <div class="help-text">Your API key for accessing the cloud model</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="api_provider">API Provider</label>
+                        <select id="api_provider" name="api_provider">
+                            <option value="openai">OpenAI</option>
+                            <option value="anthropic">Anthropic</option>
+                            <option value="azure">Azure OpenAI</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="help-text">Select your API provider</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model_name">Model Name</label>
+                        <input type="text" id="model_name" name="model_name" placeholder="e.g., gpt-4, claude-3-opus-20240229">
+                        <div class="help-text">The specific model to use from your chosen provider</div>
+                    </div>
+                </div>
+                
+                <div id="ollama_section" class="ollama-section">
+                    <div class="form-group">
+                        <label for="ollama_model">Ollama Model</label>
+                        <input type="text" id="ollama_model" name="ollama_model" value="gemma3:4b">
+                        <div class="help-text">The Ollama model to use (ensure it's downloaded locally)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 2em;">
+                <button type="submit">Generate Emails</button>
+                <a href="{{ url_for('index') }}" style="margin-left: 1em;">Cancel</a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        function toggleApiSection() {
+            const useApi = document.getElementById('use_api').checked;
+            const apiSection = document.getElementById('api_section');
+            const ollamaSection = document.getElementById('ollama_section');
+            
+            if (useApi) {
+                apiSection.style.display = 'block';
+                ollamaSection.style.display = 'none';
+            } else {
+                apiSection.style.display = 'none';
+                ollamaSection.style.display = 'block';
+            }
+        }
+        
+        // Initialize the form state
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleApiSection();
+        });
+    </script>
+</body>
+</html>

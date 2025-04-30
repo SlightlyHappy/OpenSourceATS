@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Browser</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        .nav-links { 
+            display: flex; 
+            margin-bottom: 2em; 
+            gap: 1em; 
+        }
+        
+        .nav-links a { 
+            padding: 0.7em 1.2em; 
+            text-decoration: none; 
+            color: white; 
+            background-color: #28a745; 
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .nav-links a:hover { 
+            background-color: #218838; 
+        }
+        
+        .email-browser {
+            display: flex;
+            gap: 2em;
+        }
+        
+        .email-list {
+            width: 30%;
+            min-width: 200px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            padding: 1em;
+            height: 500px;
+            overflow-y: auto;
+        }
+        
+        .email-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .email-list li {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .email-list li:hover {
+            background-color: #dee2e6;
+        }
+        
+        .email-list li.active {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .email-content {
+            flex-grow: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 1em;
+            height: 500px;
+            overflow: auto;
+            background-color: white;
+        }
+        
+        .email-content pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .no-email {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            margin-top: 200px;
+        }
+        
+        .download-link {
+            margin-top: 1em;
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        
+        .download-link:hover {
+            background-color: #0056b3;
+            text-decoration: none;
+        }
+        
+        .email-actions {
+            margin-top: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email Browser</h1>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Workflow</a>
+            <a href="{{ url_for('view_csv') }}">View CSV Data</a>
+            <a href="{{ url_for('browse_emails') }}">Browse Emails</a>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="messages">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        
+        <div class="email-browser">
+            <div class="email-list">
+                <h3>Generated Emails</h3>
+                {% if email_files %}
+                    <ul>
+                        {% for file in email_files %}
+                            <li {% if file == selected_file %}class="active"{% endif %}>
+                                <a href="{{ url_for('browse_emails', file=file) }}">{{ file }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No email files found.</p>
+                {% endif %}
+            </div>
+            
+            <div class="email-content">
+                {% if content %}
+                    <pre>{{ content }}</pre>
+                    
+                    <div class="email-actions">
+                        <a href="{{ url_for('download_email', filename=selected_file) }}" class="download-link">
+                            Download Email
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="no-email">
+                        <p>Select an email from the list to view its content.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

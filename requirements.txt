@@ -1,0 +1,41 @@
+# Core dependencies
+requests>=2.31.0
+pandas>=2.0.0
+numpy>=1.24.0
+PyPDF2>=3.0.0
+python-docx>=0.8.10
+PyMuPDF>=1.22.0  # Also known as fitz, used for better PDF extraction
+chardet>=5.0.0
+Flask>=2.3.0
+Flask-SocketIO>=5.3.0  # For real-time updates (progress bar, terminal)
+
+# PDF and document processing
+pdfminer.six>=20221105  # Alternative PDF text extraction
+
+# Data handling
+openpyxl>=3.1.2  # For Excel file support with pandas
+
+# Optional OCR dependencies
+Pillow>=10.0.0  # Used for image processing
+pytesseract>=0.3.10  # Python wrapper for Tesseract OCR
+
+# LLM API dependencies
+openai>=1.0.0  # For OpenAI API
+anthropic>=0.5.0  # For Anthropic API
+
+# Additional utilities
+html>=2023  # Used for HTML entity handling in generate_emails.py
+unicodedata2>=15.0.0  # Enhanced version of unicodedata
+python-dateutil>=2.8.2  # Date parsing utilities
+tqdm>=4.66.0  # For progress bars in CLI
+
+# Development tools (optional)
+# pytest>=7.4.0  # For running tests
+# black>=23.7.0  # For code formatting
+# flake8>=6.1.0  # For code linting
+
+# Installation notes:
+# 1. For OCR functionality, install Tesseract OCR from: https://github.com/UB-Mannheim/tesseract/wiki
+# 2. For PDF extraction, you may need Poppler Utils (for pdftoppm) or ImageMagick (for convert)
+# 3. To use the Ollama integration, install Ollama from: https://ollama.com/download
+# 4. For cloud LLM APIs, obtain API keys from OpenAI, Anthropic, or other providers

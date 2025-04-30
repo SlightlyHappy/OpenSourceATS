@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running: {{ script_name }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        .progress-container {
+            margin: 20px 0;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .terminal {
+            background-color: #212121;
+            color: #f0f0f0;
+            font-family: monospace;
+            padding: 12px;
+            border-radius: 4px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+        
+        .terminal .error {
+            color: #FF6B6B;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .status-running {
+            background-color: #ffc107;
+            color: #212121;
+        }
+        
+        .status-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-error {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .status-idle {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .nav-links { 
+            display: flex; 
+            margin-bottom: 2em; 
+            gap: 1em; 
+        }
+        
+        .nav-links a { 
+            padding: 0.7em 1.2em; 
+            text-decoration: none; 
+            color: white; 
+            background-color: #28a745; 
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .nav-links a:hover { 
+            background-color: #218838; 
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Running: <span id="script-name">{{ script_name }}</span></h1>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Workflow</a>
+            <a href="{{ url_for('view_csv') }}">View CSV Data</a>
+            <a href="{{ url_for('browse_emails') }}">Browse Emails</a>
+        </div>
+        
+        <div>
+            <div class="status status-running" id="status-indicator">Running...</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar">0%</div>
+        </div>
+        
+        <h2>Output:</h2>
+        <div class="terminal" id="terminal"></div>
+        
+        <div id="complete-message" class="hidden">
+            <p>Process completed. You can now:</p>
+            <p>
+                <a href="{{ url_for('index') }}" class="button">Return to Workflow</a>
+                <a href="{{ url_for('view_csv') }}" class="button">View CSV Data</a>
+                <a href="{{ url_for('browse_emails') }}" class="button">Browse Emails</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const socket = io();
+            const progressBar = document.getElementById('progress-bar');
+            const terminal = document.getElementById('terminal');
+            const statusIndicator = document.getElementById('status-indicator');
+            const completeMessage = document.getElementById('complete-message');
+            
+            let currentOutput = [];
+            
+            // Handle initial page load
+            fetch('{{ url_for("get_progress") }}')
+                .then(response => response.json())
+                .then(data => {
+                    updateProgress(data);
+                });
+            
+            // Handle real-time updates
+            socket.on('script_update', function(data) {
+                updateProgress(data);
+            });
+            
+            function updateProgress(data) {
+                // Update progress bar
+                const progress = data.progress;
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+                
+                // Update script name if provided
+                if (data.current_script) {
+                    document.getElementById('script-name').textContent = data.current_script;
+                    document.title = 'Running: ' + data.current_script;
+                }
+                
+                // Update status indicator
+                statusIndicator.className = 'status status-' + data.status;
+                if (data.status === 'running') {
+                    statusIndicator.textContent = 'Running...';
+                } else if (data.status === 'success') {
+                    statusIndicator.textContent = 'Success!';
+                    completeMessage.classList.remove('hidden');
+                } else if (data.status === 'error') {
+                    statusIndicator.textContent = 'Error!';
+                    completeMessage.classList.remove('hidden');
+                } else {
+                    statusIndicator.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+                }
+                
+                // Update terminal with new output
+                if (data.output && data.output.length > 0) {
+                    // Only add new lines
+                    if (data.output.length > currentOutput.length) {
+                        const newLines = data.output.slice(currentOutput.length);
+                        for (const line of newLines) {
+                            const lineElement = document.createElement('div');
+                            if (line.startsWith('ERROR:')) {
+                                lineElement.className = 'error';
+                            }
+                            lineElement.textContent = line;
+                            terminal.appendChild(lineElement);
+                        }
+                        // Auto-scroll to bottom
+                        terminal.scrollTop = terminal.scrollHeight;
+                        // Update the current output
+                        currentOutput = [...data.output];
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

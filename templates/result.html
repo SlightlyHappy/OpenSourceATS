@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Result - {{ script_name }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        pre { background-color: #e9ecef; padding: 1em; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; max-height: 60vh; overflow-y: auto; }
+        .status-success { color: green; font-weight: bold; }
+        .status-error { color: red; font-weight: bold; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Result for: {{ script_name }}</h1>
+        <p>Status: <span class="status-{{ status }}">{{ status.upper() }}</span></p>
+        <h2>Output:</h2>
+        <pre>{{ output }}</pre>
+        <hr>
+        <p><a href="{{ url_for('index') }}">&laquo; Back to Workflow</a></p>
+    </div>
+</body>
+</html>

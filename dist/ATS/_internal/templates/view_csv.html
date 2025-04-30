@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Data Viewer</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f4; }
+        .container { background-color: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 0.5em; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        .nav-links { 
+            display: flex; 
+            margin-bottom: 2em; 
+            gap: 1em; 
+        }
+        
+        .nav-links a { 
+            padding: 0.7em 1.2em; 
+            text-decoration: none; 
+            color: white; 
+            background-color: #28a745; 
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .nav-links a:hover { 
+            background-color: #218838; 
+        }
+        
+        .csv-selector {
+            margin-bottom: 2em;
+            padding: 1em;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+        
+        .csv-selector select {
+            padding: 8px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+        
+        .csv-selector button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .csv-selector button:hover {
+            background-color: #0056b3;
+        }
+        
+        .csv-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+            overflow-x: auto;
+            display: block;
+            max-height: 500px;
+        }
+        
+        .csv-table th, .csv-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .csv-table th {
+            background-color: #e9ecef;
+            position: sticky;
+            top: 0;
+        }
+        
+        .csv-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            padding: 1em;
+            background-color: #f8d7da;
+            border-radius: 4px;
+            margin-bottom: 1em;
+        }
+        
+        .no-data {
+            color: #6c757d;
+            font-style: italic;
+            margin: 2em 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSV Data Viewer</h1>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Workflow</a>
+            <a href="{{ url_for('view_csv') }}">View CSV Data</a>
+            <a href="{{ url_for('browse_emails') }}">Browse Emails</a>
+        </div>
+        
+        <div class="csv-selector">
+            <form action="{{ url_for('view_csv') }}" method="get">
+                <label for="file">Select CSV file:</label>
+                <select name="file" id="file">
+                    <option value="">-- Select a file --</option>
+                    {% for file in csv_files %}
+                        <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">View</button>
+            </form>
+        </div>
+        
+        {% if error %}
+            <div class="error-message">
+                <strong>Error loading CSV:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
+        {% if selected_file %}
+            <h2>Data from: {{ selected_file }}</h2>
+            
+            {% if columns and data %}
+                <div style="overflow-x: auto;">
+                    <table class="csv-table">
+                        <thead>
+                            <tr>
+                                {% for column in columns %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data %}
+                                <tr>
+                                    {% for column in columns %}
+                                        <td>{{ row[column] }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="no-data">No data available in the selected file.</div>
+            {% endif %}
+        {% else %}
+            <div class="no-data">Select a CSV file to view its data.</div>
+        {% endif %}
+    </div>
+</body>
+</html>
